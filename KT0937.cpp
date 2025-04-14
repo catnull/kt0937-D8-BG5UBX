@@ -1,11 +1,11 @@
 /**
- * @brief  PU2CLR KT0937 Arduino Library
+ * @brief  BG5UBX KT0937 Arduino Library
  * @details KT0937 Arduino Library implementation. This is an Arduino library for the KT0937, BROADCAST RECEIVER.  
  * @details It works with I2C protocol and can provide an easier interface to control the KT0937 device.<br>
  * @details This library was built based on KT0937 Datasheet from KTMicro (Monolithic Digital FM/MW/SW/LW Receiver Radio-on-a-Chip TM). 
  * @details This library can be freely distributed using the MIT Free Software model.
- * @copyright Copyright (c) 2020 Ricardo Lima Caratti. 
- * @author Ricardo LIma Caratti (pu2clr@gmail.com)
+ * @copyright Copyright (c) 2024 Zhang Yuandong. 
+ * @author Zhang Yuandong (seighbang@126.com)
  */
 
 #include <KT0937.h>
