@@ -1,13 +1,21 @@
 
 /**
- * @mainpage BG5UBX KT0937 Arduino Library
- * @brief BG5UBX KT0937 Arduino Library implementation. <br>
-
+ * @mainpage PU2CLR KT0937 Arduino Library
+ * @brief PU2CLR KT0937 Arduino Library implementation. <br>
+ * @details This is an Arduino library for the KT0937, BROADCAST RECEIVER.<br>
+ * @details It works with I2C protocol and can provide an easier interface for controlling the KT0937 device.<br>
+ * @details This library was built based on KT0937 Datasheet from KTMicro (Monolithic Digital FM/MW/SW/LW Receiver Radio-on-a-Chip TM).
+ * @details Others sources help the author to build this library. They are referenced in the documentation for this library on: https://github.com/pu2clr/KT0937
+ * @details This library uses the I2C protocols to read and write KT0937 registers. In this context, registers are memory position into the device.
+ * @details The KT0937 is a full band AM (LW, MW and SW) and FM DSP receiver that can provide you a easy way to build a high quality radio with low cost.
+ * @details This device, will surprise hobbyists and experimenters with its simplicity.
  *
- * This library can be freely distributed using the GPL3.0 Free Software model.
+ * This library can be freely distributed using the MIT Free Software model.
  *
- * Copyright (c) 2024 Zhang Yuandong BG5UBX
- * 
+ * Copyright (c) 2024 Zhang Yuandong 
+ * Copyright (c) 2020 Ricardo Lima Caratti.
+ * Contact: pu2clr@gmail.com
+ *
  */
 
  #ifndef _KT0937_H // Prevent this file from being compiled more than once
@@ -1055,7 +1063,7 @@ typedef union {
 typedef union {
     struct
     {
-        uint8_t INT_PIN  : 2;//!<Default Value B(10). INT pin function control:00 = Reserved.\
+        uint8_t INT_PIN  : 2;//!<Default Value B(10). INT pin function control:00 = Auto cleared.\
                                 01 = Output high.\
                                 10 = Output low.\
                                 11 = Reserved.
@@ -1787,7 +1795,7 @@ typedef union {
         uint8_t RESERVED : 2; //!< Default Value B(00). 
     } refined;
     uint8_t raw;
-} kt09xx_status_4; //STATUS 4
+} kt09xx_status_4; //STATUS4
 
 /**
  * @ingroup GA01
@@ -1818,7 +1826,7 @@ typedef union {
         uint8_t RESERVED : 1; //!< Default Value B(0). 
     } refined;
     uint8_t raw;
-} kt09xx_status_6; //STATUS_6
+} kt09xx_status_6; //STATUS6
 
 /**
  * @ingroup GA01
@@ -1849,7 +1857,7 @@ typedef union {
         uint8_t RESERVED : 1; //!< Default Value B(0).  
     } refined;
     uint8_t raw;
-} kt09xx_status_8; //STATUS_8
+} kt09xx_status_8; //STATUS8
 
 /**
  * @ingroup GA01
@@ -1905,7 +1913,7 @@ typedef union {
         uint8_t RESERVED : 1; //!< Default Value B(00). 
     } refined;
     uint8_t raw;
-} kt09xx_am_status_0;//SMSTATUS0
+} kt09xx_am_status_0;//AMSTATUS0
 
 /**
  * @ingroup GA01
@@ -2149,7 +2157,13 @@ protected:
     uint8_t currentRefClockType = OSCILLATOR_32KHZ;         //!< Stores the crystal type
     uint8_t currentRefClockEnabled = REF_CLOCK_DISABLE;     //!< Strores 0 = Crystal; 1 = Reference clock
     uint8_t currentDialMode = DIAL_MODE_OFF;                //!< Stores the default Dial Mode (OFF)
-    uint16_t deviceId;
+    uint16_t deviceId;                                      //!< Stores the deviceID
+    uint8_t currentAMRSSI;                                  //!< Stores the current AM (SW/MW) RSSI dBuVEMF
+    uint8_t currentAMSNR;                                   //!< Stores the current AM (SW/MW) SNR ratio
+    uint8_t currentFMRSSI;                                  //!< Stores the current FM RSSI dBuVEMF
+    uint8_t currentFMSNR;                                   //!< Stores the current FM SNR ratio
+    uint8_t currentRSSI;
+    uint8_t currentSNR;
 
     uint8_t currentVolume = 15;
 
@@ -2187,6 +2201,7 @@ public:
     void enableSW(uint8_t enable_sw);
 
     void enableDialMode();
+    void enableINT();
     void disableFMSoftMute(bool disable);
     void disableMWSoftMute(bool disable);
     void disableSWSoftMute(bool disable);
@@ -2197,6 +2212,12 @@ public:
     
     
     uint16_t getCurrentFrequency();
+    uint8_t getAMRSSI();
+    uint8_t getAMSNR();
+    uint8_t getFMRSSI();
+    uint8_t getFMSNR();
+    uint8_t getRSSI();
+    uint8_t getSNR();
     void setIntMode(bool isRising);
     
 

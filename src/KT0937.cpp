@@ -1,11 +1,11 @@
 /**
- * @brief  BG5UBX KT0937 Arduino Library
+ * @brief  PU2CLR KT0937 Arduino Library
  * @details KT0937 Arduino Library implementation. This is an Arduino library for the KT0937, BROADCAST RECEIVER.  
  * @details It works with I2C protocol and can provide an easier interface to control the KT0937 device.<br>
  * @details This library was built based on KT0937 Datasheet from KTMicro (Monolithic Digital FM/MW/SW/LW Receiver Radio-on-a-Chip TM). 
  * @details This library can be freely distributed using the MIT Free Software model.
- * @copyright Copyright (c) 2024 Zhang Yuandong. 
- * @author Zhang Yuandong (seighbang@126.com)
+ * @copyright Copyright (c) 2020 Ricardo Lima Caratti. 
+ * @author Ricardo LIma Caratti (pu2clr@gmail.com)
  */
 
 #include <KT0937.h>
@@ -260,7 +260,7 @@ reg4.refined.AM_SEL_ENHANCE = 1; //AM_SEL_ENHANCE 1
 setRegister(REG_DSPCFG5, reg4.raw);
 
 //set INT mode
-setIntMode(INT_MODE_RISING);
+
 
 //enable DialMode
 enableDialMode(); 
@@ -436,6 +436,7 @@ void KT0937::turnOnADCCH()
 
  void KT0937::setFMBand(uint16_t frequency)
  {
+    this->currentMode = MODE_FM;
     enableSW(0);
     shutDownADCCH();
     uint8_t freqH = ((frequency /50) >> 8);
@@ -528,6 +529,7 @@ void KT0937::turnOnADCCH()
  */
  void KT0937::setFMBand()
  {
+    this->currentMode = MODE_FM;
     enableSW(0);
     shutDownADCCH();
     //uint8_t freqH = ((frequency /50) >> 8);
@@ -612,11 +614,13 @@ void KT0937::turnOnADCCH()
 
  void KT0937::setAMBand(uint16_t lowFrequency, uint16_t highFrequency)
  {
-
+    this->currentMode = MODE_AM;
+    //
  }
 
  void KT0937::setAMBand()
  {
+    this->currentMode = MODE_AM;
     enableSW(0);
     shutDownADCCH();
     
@@ -700,6 +704,7 @@ void KT0937::turnOnADCCH()
 
  void KT0937::setSWBand()
  {
+    this->currentMode = MODE_AM;
     enableSW(1);
     shutDownADCCH();
     
@@ -783,6 +788,7 @@ void KT0937::turnOnADCCH()
 
  void KT0937::setSWBand(uint16_t lowFrequency, uint16_t highFrequency, uint16_t chanNumber )
   {
+    this->currentMode = MODE_AM;
     enableSW(1);
     shutDownADCCH();
     //calc the lowFrequency
@@ -882,6 +888,8 @@ void KT0937::turnOnADCCH()
    //turn on ADCCH 
     turnOnADCCH();
 
+    
+
 
  }
 
@@ -978,6 +986,64 @@ void KT0937::disableSWAFC(bool disable)
 
  }
 
+
+ uint8_t KT0937::getAMRSSI()
+{   
+    kt09xx_am_status_0 reg;
+    reg.raw = getRegister(REG_AMSTATUS0);
+    this->currentAMRSSI = reg.refined.AM_RSSI + 3;  //dBm = RSSI -110 ; dBuV = RSSI - 3; dBuVEMF = RSSI + 3; 
+    return this->currentAMRSSI;
+}
+
+uint8_t KT0937::getAMSNR()
+{   
+    kt09xx_am_status_2 reg;
+    reg.raw = getRegister(REG_AMSTATUS2);
+    this->currentAMSNR = reg.refined.AM_SNR_MODE1;  // 0 minimum , 63 maximum
+    return this->currentAMSNR;
+}
+
+uint8_t KT0937::getFMRSSI()
+{   
+    kt09xx_status_8 reg;
+    reg.raw = getRegister(REG_STATUS8);
+    this->currentFMRSSI = reg.refined.FM_RSSI + 3;  //dBm = RSSI -110 ; dBuV = RSSI - 3; dBuVEMF = RSSI + 3; 
+    return this->currentFMRSSI;
+}
+
+uint8_t KT0937::getFMSNR()
+{   
+    kt09xx_status_4 reg;
+    reg.raw = getRegister(REG_STATUS4);
+    this->currentFMSNR = reg.refined.FM_SNR;  // 0 minimum , 63 maximum
+    return this->currentFMSNR;
+}
+
+uint8_t KT0937::getRSSI()
+{
+    if(this->currentMode = MODE_AM)
+    {
+        this->currentRSSI = this->getAMRSSI();
+    }else if( this->currentMode == MODE_FM)
+    {
+        this->currentRSSI = this->getFMRSSI();
+    }
+    return(this->currentRSSI);
+}
+
+uint8_t KT0937::getSNR()
+{
+    if(this->currentMode = MODE_AM)
+    {
+        this->currentSNR = this->getAMSNR();
+    }else if( this->currentMode == MODE_FM)
+    {
+        this->currentSNR = this->getFMSNR();
+    }
+    return(this->currentSNR);
+
+}
+
 /**
  * @ingroup GA03
  * @brief 
@@ -1004,15 +1070,12 @@ void KT0937::disableSWAFC(bool disable)
 
 void KT0937::setIntMode(bool isRising)
 {
-    //set INT Mode TUNE_INT_EN  0x22<7>  to 1
     kt09xx_softmute_5 reg0;
     kt09xx_softmute_2 reg1;
-    reg0.raw = getRegister(REG_SOFTMUTE5);
-    reg0.refined.TUNE_INT_EN= 1;
-    setRegister(REG_SOFTMUTE5,reg0.raw);
-
+    
+   
     // set Pulse mode :  positive Pulse (RISING): TUNE_INT_MODE : 0x22<6> = 1, TUNE_INT_PL:0x1F<7> = 1 
-    //                   negtive Pulse (FALLING): TUNE_INT_MODE : 0x22<6> = 1, TUNE_INT_PL:0x1F<7> = 1
+    //                   negtive Pulse (FALLING): TUNE_INT_MODE : 0x22<6> = 1, TUNE_INT_PL:0x1F<7> = 0
 
     if(isRising == INT_MODE_RISING)
     {        
@@ -1021,22 +1084,47 @@ void KT0937::setIntMode(bool isRising)
         setRegister(REG_SOFTMUTE5,reg0.raw);
 
         reg1.raw = getRegister(REG_SOFTMUTE2);
-        reg1.refined.TUNE_INT_PL=1;
+        reg1.refined.TUNE_INT_PL= 1;
         setRegister(REG_SOFTMUTE2,reg1.raw);
 
-    }else
+    }else if(isRising == INT_MODE_FALLING)
     {
         reg0.raw = getRegister(REG_SOFTMUTE5);
         reg0.refined.TUNE_INT_MODE= 1;
         setRegister(REG_SOFTMUTE5,reg0.raw);
 
         reg1.raw = getRegister(REG_SOFTMUTE2);
-        reg1.refined.TUNE_INT_PL=0;
+        reg1.refined.TUNE_INT_PL= 0;
         setRegister(REG_SOFTMUTE2,reg1.raw);
     }
 
+     //set INT Mode TUNE_INT_EN  0x22<7>  to 1
+     reg0.raw = getRegister(REG_SOFTMUTE5);
+     reg0.refined.TUNE_INT_EN= 1;
+     setRegister(REG_SOFTMUTE5,reg0.raw);
+
+    //set INT_PIN to b(00) as auto cleard interrupt signal.
+    kt09xx_anacfg_1 reg2;
+    reg2.raw = getRegister(REG_ANACFG1);
+    reg2.refined.INT_PIN= 0;
+    setRegister(REG_ANACFG1,reg2.raw);
+
 }
 
+void KT0937::enableINT()
+{
+    kt09xx_softmute_5 reg;
+    //set INT Mode TUNE_INT_EN  0x22<7>  to 1
+    reg.raw = getRegister(REG_SOFTMUTE5);
+    reg.refined.TUNE_INT_EN= 1;
+    setRegister(REG_SOFTMUTE5,reg.raw);
+
+    //set INT_PIN to b(00) as auto cleard interrupt signal.
+    kt09xx_anacfg_1 reg2;
+    reg2.raw = getRegister(REG_ANACFG1);
+    reg2.refined.INT_PIN= 0;
+    setRegister(REG_ANACFG1,reg2.raw);
+}
 
 void KT0937::setSWOnPin(int sw_on_pin_temp)
 {
