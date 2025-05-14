@@ -1,6 +1,6 @@
 
 /**
- * @mainpage PU2CLR KT0937 Arduino Library
+ * @mainpage BG5UBX KT0937 Arduino Library based on pu2clr KT0915 arduino lib
  * @brief PU2CLR KT0937 Arduino Library implementation. <br>
  * @details This is an Arduino library for the KT0937, BROADCAST RECEIVER.<br>
  * @details It works with I2C protocol and can provide an easier interface for controlling the KT0937 device.<br>

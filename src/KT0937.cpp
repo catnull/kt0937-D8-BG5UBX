@@ -1021,7 +1021,7 @@ uint8_t KT0937::getFMSNR()
 
 uint8_t KT0937::getRSSI()
 {
-    if(this->currentMode = MODE_AM)
+    if(this->currentMode == MODE_AM)
     {
         this->currentRSSI = this->getAMRSSI();
     }else if( this->currentMode == MODE_FM)
@@ -1033,7 +1033,7 @@ uint8_t KT0937::getRSSI()
 
 uint8_t KT0937::getSNR()
 {
-    if(this->currentMode = MODE_AM)
+    if(this->currentMode == MODE_AM)
     {
         this->currentSNR = this->getAMSNR();
     }else if( this->currentMode == MODE_FM)
