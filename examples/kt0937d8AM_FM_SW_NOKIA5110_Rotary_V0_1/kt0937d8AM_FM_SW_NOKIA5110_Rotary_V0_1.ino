@@ -99,12 +99,12 @@ typedef struct{
 
 //NOKIA 5110 LCD DISPLAYER
 // Software SPI (slower updates, more flexible pin options):
-// pin 27 - Serial clock out (SCLK)  
-// pin 14 - Serial data out (DIN) 
+// pin 14 - Serial clock out (SCLK)  
+// pin 27 - Serial data out (DIN) 
 // pin 26 - Data/Command select (D/C)
 // pin 25 - LCD chip select (CS)
 // pin 33 - LCD reset (RST)
-U8X8_PCD8544_84X48_4W_SW_SPI u8x8(/* clock=*/ 27, /* data=*/ 14, /* cs=*/ 25, /* dc=*/ 26, /* reset=*/ 33);	// Nokia 5110 Display
+U8X8_PCD8544_84X48_4W_SW_SPI u8x8(/* clock=*/ 14, /* data=*/ 27, /* cs=*/ 25, /* dc=*/ 26, /* reset=*/ 33);	// Nokia 5110 Display
 
 
 
@@ -330,8 +330,20 @@ void rotary_loop()
 void displayBuffer()
 {
   sprintf(display_buffer,"%s","             "); 
-  sprintf(display_buffer,"B:%2d V:%02d",band, currentVol);  
+  sprintf(display_buffer,"B:%02d V:%02d",band, currentVol);  
   u8x8.drawString(0, 0, display_buffer);
+  //rotary mode inicating as inverse font.
+  if(currentMode == VOL_MODE)
+  {
+    u8x8.inverse();
+    u8x8.drawString(5, 0, "V");
+    u8x8.noInverse();
+  }else if (currentMode == BAND_MODE){
+    u8x8.inverse();
+    u8x8.drawString(0, 0, "B");
+    u8x8.noInverse();
+  }
+
   if(band == BAND_FM)
   {
     sprintf(display_buffer,"%s","             "); 
